@@ -75,8 +75,8 @@ class HowLongToBeat_Games_Database:
             """"""""""""""""""""""""""""""
             
             """GET ALL THE SCRAPED INFO FROM THE IMPORTED CRAWLER"""
-            crawler = HowLongToBeat_Crawler()
-            game_info = crawler.scrape(i)
+            crawler = HowLongToBeat_Crawler(i)
+            game_info = crawler.scrape()
             if game_info == None:
                 continue
             """"""""""""""""""""""""""""""""""""""""""""""""""""""

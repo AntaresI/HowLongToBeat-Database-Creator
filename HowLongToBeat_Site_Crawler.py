@@ -9,7 +9,7 @@ class HowLongToBeat_Crawler:
     
    def __init__(self,url_num=0):
        self.url_num = url_num
-       self.check_response = True
+   
        time.sleep(2)
        
        url = 'https://howlongtobeat.com/game/'+str(url_num)  #
@@ -18,16 +18,26 @@ class HowLongToBeat_Crawler:
            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:53.0) Gecko/20100101 Firefox/53.0', 'Accept': 'application/json'
        }
        
-       response = requests.get(url, headers=headers)
+       self.response = requests.get(url, headers=headers)
+       self.soup = BeautifulSoup(self.response.text, "html.parser")
        
-       if response.status_code == 404:
+       
+   def is_data_ok(self):    #Checks if the game has enough data, sometimes a page for a game can exist, but it's pretty much empty with no statistics and there is a div saying Not Enough Data, in that case skip that game
+
+       if self.response.status_code == 404:
            print("PAGE 404 ERROR")
-           self.check_response = False
-       self.soup = BeautifulSoup(response.text, "html.parser")
+           return False
+       data_check = self.soup.find_all("div", class_='global_padding')
+       info = self.soup.find_all("div", class_=re.compile("GameSummary_profile_info__HZFQu(,?.*)"))
+       if data_check[1].get_text(strip=True) == 'Not enough data.' or len(info)<6:
+           return False
+       else:
+           return True  
        
    def scrape(self):
        
-       if self.check_response == False:
+       if not self.is_data_ok:
+           print("NOT ENOUGH DATA")
            return None
        
        game_info = {}
@@ -37,6 +47,9 @@ class HowLongToBeat_Crawler:
        
        game_durations, online = self.get_time_spent_playing(self.soup)
        game_info['durations'] = game_durations
+       if game_durations == None:
+           print("NOT ENOUGH DATA")
+           return None
        game_info['online'] = online
        
        other_info = self.get_info(self.soup)
@@ -45,7 +58,12 @@ class HowLongToBeat_Crawler:
        game_info['platforms'] = other_info[1].split(", ")
        game_info['genres'] = other_info[2].split(", ")
        game_info['developers'] = other_info[3].split(", ")
-       game_info['publishers'] = other_info[4].split(", ")
+       
+       if other_info[4] == None:    # Game sometimes doesn't have a publisher, but it always has a developer
+           game_info['publishers'] = [other_info[4]]
+       else:
+           game_info['publishers'] = other_info[4].split(", ")
+           
        game_info['releases'] = other_info[5]
        
        return game_info
@@ -70,59 +88,100 @@ class HowLongToBeat_Crawler:
        return game_statistics
 
    def get_time_spent_playing(self,soup):
-       # durations = soup.find_all("li", class_=re.compile("GameStats_short__tSJ6I time_\d+$"))
-       durations = soup.find_all("li", class_=re.compile("GameStats_(long|short)__(tSJ6I|h3afN) time_\d+$"))
-       off_or_on = "Offline"
-       game_durations = []
        
-       for i in range(len(durations)):
-           if i == 4:   #Sometimes there are 2 sets of durations for different platforms, but they pretty much don't differ at all, so I want only one set which is at most 4 elements
-               break
+      durations = soup.find_all("li", class_=re.compile("GameStats_(long|short|full)__(tSJ6I|h3afN|jz7k7) time_\d+$"))
+      off_or_on = "Offline"
+      game_durations = []
+      
+      single_modes = ['Single-Player', 'Vs.', 'Co-Op']
+      
+      if len(durations) == 0:
+          return None, None
+      if len(durations) == 1 and durations[0].find("h4").get_text().split()[0] in single_modes:   #Handling that there can be just one duration named 'Single-Player' instead of classic 4 types of durations for offline games
+          split_durations = durations[0].find("h5").get_text().split()
+          
+          if len(split_durations) == 1:   #Sometimes a duration is of form '--' without a unit, which messes up the code, so I need to manually add it
+              split_durations.append("Hours")
+              
+          duration = self.array_cleaner(split_durations)
+         
+          if duration[1] == "Minutes":   #In case the units are minutes instead of usual hours, convert it to hours
+              duration[0]=str(float(duration[0])/10/6)
+              
+          list_of_durations = []   #For averaging intervals, should there be some as duration instead of one number, example is Star Wars: The Old Republic
         
-           duration = self.array_cleaner(durations[i].find("h5").get_text().split())
-           
-           if duration[1] == "Minutes":   #In case the units are minutes instead of usual hours, convert it to hours
-               duration[0]=str(float(duration[0])/10/6)
-               
-           list_of_durations = []   #For averaging intervals, should there be some as duration instead of one number, example is Star Wars: The Old Republic
-         
-           for tup in duration:
-               try:
-                   list_of_durations.append(float(tup))
-               except ValueError:
-                   pass
-               
-           
-           duration = np.mean(list_of_durations)
-           
-           game_durations.append(duration)
-           
-       if len(game_durations)<4:
-           off_or_on = "Online"
-           game_durations_dictionary = {}
-           game_durations_dictionary['Vs.'] = game_durations[:-1]
-           game_durations_dictionary['Co-Op'] = game_durations[:-2]
-           if len(game_durations)<3:
-               game_durations_dictionary['Single-Player'] = None
-           else:
-               game_durations_dictionary['Single-Player'] = game_durations[:-3]
-           game_durations_dictionary['Main Story'] = None
-           game_durations_dictionary['Main + Extras'] = None
-           game_durations_dictionary['Completionist'] = None
-           game_durations_dictionary['All Styles'] = None
-       else:
-           game_durations_dictionary = {}
-           game_durations_dictionary['Vs.'] = None
-           game_durations_dictionary['Co-Op'] = None
-           game_durations_dictionary['Single-Player'] = None
-         
-           game_durations_dictionary['Main Story'] = game_durations[0]
-           game_durations_dictionary['Main + Extras'] = game_durations[1]
-           game_durations_dictionary['Completionist'] = game_durations[2] 
-           game_durations_dictionary['All Styles'] = game_durations[3]
-           
-       return game_durations_dictionary, off_or_on
-
+          for tup in duration:
+              try:
+                  list_of_durations.append(float(tup))
+              except ValueError:
+                  pass
+              
+          
+          duration = np.mean(list_of_durations)
+          game_durations_dictionary = {}
+          game_durations_dictionary['Single-Player'] = None
+          game_durations_dictionary['Vs.'] = None
+          game_durations_dictionary['Co-Op'] = None
+          game_durations_dictionary['Main Story'] = None
+          game_durations_dictionary['Main + Extras'] = None
+          game_durations_dictionary['Completionist'] = None 
+          game_durations_dictionary['All Styles'] = None
+          game_durations_dictionary[durations[0].find("h4").get_text().split()[0]] = duration
+          
+          return  game_durations_dictionary, off_or_on
+      
+      else:
+          for i in range(len(durations)):
+              if i == 4:   #Sometimes there are 2 sets of durations for different platforms, but they pretty much don't differ at all, so I want only one set which is at most 4 elements
+                  break
+              split_durations = durations[i].find("h5").get_text().split()
+              
+              if len(split_durations) == 1:   #Sometimes a duration is of form '--' without a unit, which messes up the code, so I need to manually add it
+                  split_durations.append("Hours")
+                  
+              duration = self.array_cleaner(split_durations)
+             
+              if duration[1] == "Minutes":   #In case the units are minutes instead of usual hours, convert it to hours
+                  duration[0]=str(float(duration[0])/10/6)
+                  
+              list_of_durations = []   #For averaging intervals, should there be some as duration instead of one number, example is Star Wars: The Old Republic
+            
+              for tup in duration:
+                  try:
+                      list_of_durations.append(float(tup))
+                  except ValueError:
+                      pass
+                  
+              
+              duration = np.mean(list_of_durations)
+              
+              game_durations.append(duration)
+              
+          if len(game_durations)<4:
+              off_or_on = "Online"
+              game_durations_dictionary = {}
+              game_durations_dictionary['Vs.'] = game_durations[-1]
+              game_durations_dictionary['Co-Op'] = game_durations[-2]
+              if len(game_durations)<3:
+                  game_durations_dictionary['Single-Player'] = None
+              else:
+                  game_durations_dictionary['Single-Player'] = game_durations[-3]
+              game_durations_dictionary['Main Story'] = None
+              game_durations_dictionary['Main + Extras'] = None
+              game_durations_dictionary['Completionist'] = None
+              game_durations_dictionary['All Styles'] = None
+          else:
+              game_durations_dictionary = {}
+              game_durations_dictionary['Vs.'] = None
+              game_durations_dictionary['Co-Op'] = None
+              game_durations_dictionary['Single-Player'] = None
+            
+              game_durations_dictionary['Main Story'] = game_durations[0]
+              game_durations_dictionary['Main + Extras'] = game_durations[1]
+              game_durations_dictionary['Completionist'] = game_durations[2] 
+              game_durations_dictionary['All Styles'] = game_durations[3]
+              
+          return game_durations_dictionary, off_or_on
 
    def get_info(self,soup):
        info = soup.find_all("div", class_=re.compile("GameSummary_profile_info__HZFQu(,?.*)"))
@@ -151,8 +210,12 @@ class HowLongToBeat_Crawler:
        info_arr.append(devs)
        
        publishers = info[4].get_text(strip=True)
-       publishers = re.sub(r'(Publishers|Publisher):',"",publishers)
-       info_arr.append(publishers)
+       if "Publisher" not in publishers:  #Sometimes a game doesn't have a publisher, which messes up the index ordering, so I need to manually insert a None into the 5th position of the array
+           info_arr.append(None)
+           info.insert(4,None)
+       else:
+           publishers = re.sub(r'(Publishers|Publisher):',"",publishers)
+           info_arr.append(publishers)
        
        releases = {}
        for j in range(5,8):
@@ -160,12 +223,17 @@ class HowLongToBeat_Crawler:
                break
            release = info[j].get_text(strip=True)
            releases[release[0:2]] = release[3:]
-           # NA_release = replace_word(NA_release, "NA:")
-           # info_arr.append(NA_release)
            
-           # EU_release = info[6].get_text(strip=True)
-           # EU_release = replace_word(EU_release, "EU:")
-           # info_arr.append(EU_release)
+           if "," not in releases[release[0:2]]:   #sometimes there is no day in the release date, in that case I manually insert "01" as the day 
+               fixed_date = releases[release[0:2]].split(" ")
+               fixed_date.insert(1,"01,")   
+               if len(fixed_date)==2:     #or it can be just a plain year, so both day and month is missing
+                   fixed_date.append("January")
+                   fixed_date[0], fixed_date[2] = fixed_date[2], fixed_date[0]
+               fixed_date = " ".join(fixed_date)
+             
+               releases[release[0:2]] = fixed_date
+               
        if 'EU' not in releases.keys():
            releases['EU'] = None
        if 'NA' not in releases.keys():
@@ -203,8 +271,10 @@ class HowLongToBeat_Crawler:
            string = string.replace('½','.5')
            
        if '--' in string:
-           string = '0'
+           string = '0'  
            
-       return string            
+       if 'NR' in string:
+           string = None 
+       return string              
        
     
