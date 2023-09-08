@@ -1,5 +1,5 @@
 import psycopg2 as pg2   #Python library for controlling PostGresSQL databases
-from HowLongToBeat_Crawler import HowLongToBeat_Crawler
+from HowLongToBeat_Site_Crawler import HowLongToBeat_Crawler
 
 class HowLongToBeat_Games_Database:
     
@@ -36,31 +36,31 @@ class HowLongToBeat_Games_Database:
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
         
-        self.cur.execute("CREATE TABLE games (game_id SERIAL PRIMARY KEY, title VARCHAR(500) UNIQUE, off_or_on VARCHAR(10), \
+        self.cur.execute("CREATE TABLE IF NOT EXISTS games (game_id SERIAL PRIMARY KEY, title VARCHAR(500) UNIQUE, off_or_on VARCHAR(10), \
                     description VARCHAR(10000), logging INT, backlogs INT, replays INT, retired_percent DECIMAL(4,1),\
                     rating_percent INT, beat INT, main_story DECIMAL(5,1), main_and_extras DECIMAL(5,1),\
                     completionist DECIMAL(5,1), all_styles DECIMAL(5,1), single_player DECIMAL(5,1), co_op DECIMAL(5,1),\
                     versus DECIMAL(5,1), eu_release DATE, na_release DATE, jp_release DATE)")
         
-        self.cur.execute("CREATE TABLE platforms (platform_id SERIAL PRIMARY KEY, platform VARCHAR(500) UNIQUE)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS platforms (platform_id SERIAL PRIMARY KEY, platform VARCHAR(500) UNIQUE)")
         
-        self.cur.execute("CREATE TABLE game_platforms (platform_id INTEGER REFERENCES platforms(platform_id),\
+        self.cur.execute("CREATE TABLE IF NOT EXISTS game_platforms (platform_id INTEGER REFERENCES platforms(platform_id),\
                     game_id INTEGER REFERENCES games(game_id))")
         
-        self.cur.execute("CREATE TABLE genres (genre_id SERIAL PRIMARY KEY, genre VARCHAR(500) UNIQUE)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS genres (genre_id SERIAL PRIMARY KEY, genre VARCHAR(500) UNIQUE)")
         
-        self.cur.execute("CREATE TABLE game_genres (genre_id INTEGER REFERENCES genres(genre_id),\
+        self.cur.execute("CREATE TABLE IF NOT EXISTS game_genres (genre_id INTEGER REFERENCES genres(genre_id),\
                     game_id INTEGER REFERENCES games(game_id))")
         
         
-        self.cur.execute("CREATE TABLE developers (developer_id SERIAL PRIMARY KEY, developer VARCHAR(500) UNIQUE)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS developers (developer_id SERIAL PRIMARY KEY, developer VARCHAR(500) UNIQUE)")
         
-        self.cur.execute("CREATE TABLE game_developers (developer_id INTEGER REFERENCES developers(developer_id),\
+        self.cur.execute("CREATE TABLE IF NOT EXISTS game_developers (developer_id INTEGER REFERENCES developers(developer_id),\
                     game_id INTEGER REFERENCES games(game_id))")
         
-        self.cur.execute("CREATE TABLE publishers (publisher_id SERIAL PRIMARY KEY, publisher VARCHAR(500) UNIQUE)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS publishers (publisher_id SERIAL PRIMARY KEY, publisher VARCHAR(500) UNIQUE)")
         
-        self.cur.execute("CREATE TABLE game_publishers (publisher_id INTEGER REFERENCES publishers(publisher_id),\
+        self.cur.execute("CREATE TABLE IF NOT EXISTS game_publishers (publisher_id INTEGER REFERENCES publishers(publisher_id),\
                     game_id INTEGER REFERENCES games(game_id))")
         """"""""""""""""""""""""   
         
