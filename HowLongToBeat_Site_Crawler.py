@@ -70,7 +70,7 @@ class HowLongToBeat_Crawler:
        game_durations, online = self.get_time_spent_playing(self.soup)
        game_info['durations'] = game_durations
        
-       if game_durations == None: # Also if there aren't game durations then there is no point in... 
+       if game_durations == None:   # Also if there aren't game durations then there is no point in... 
            print("NOT ENOUGH DATA") #...extracting additional info
            return None                            
            
@@ -276,7 +276,7 @@ class HowLongToBeat_Crawler:
        """"""""""""""""""""""""""""""""""""""""""""""""
        
        """GET GENRES OF THE GAME"""  
-       genres = info[2].get_text(strip=True)
+       genres = info[2].get_text(strip=True)    #And sometimes it even doesn't have a genre there
        genres = re.sub(r'(Genres|Genre):',"",genres)
        info_arr.append(genres)
        """"""""""""""""""""""""""""""""
