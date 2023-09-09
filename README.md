@@ -1,5 +1,5 @@
 # HowLongToBeat-Database-Creator
-
+![hi](/png/howlongtobeat_website.png)
 # Introduction
 This is my project that involves creating a database `HowLongToBeat_Database.sql` from scraping data from website [HowLongToBeat](https://howlongtobeat.com/), which contains videogames and gaming statistics related to each videogame, such as the game's genre, developer, publisher, how long it takes to finish the game etc. 
 
@@ -9,14 +9,14 @@ The main motivation for me creating this project was my hobby, which is playing 
 
 2) the longest-to-complete offline game in the mode Main+Sides which is how I play all videogames - complete the main story and sidequests (the rankings use either All Styles mode or seemingly don't correspond to any displayed duration for each game at all).
 
-So I decided to do it myself. This meant the need to setup a list of all the videogames and their durations (how long it takes, according to players who have finished it, to complete the videogame). And while I was at it - why not get all the available info for each game right with it? Therefore I opted for creating a database containing all the possible info for each videogame. 
+So I decided to do it myself. This meant the need to setup a list of all the videogames and their durations (how long it takes, according to players who have finished it, to complete the videogame). And while I was at it - why not get all the available info for each game right with it? Therefore I opted for using `Python` and its `PostgreSQL` library `psycopg2` to create a database containing all the possible info for each videogame. 
 
 # Scraping HowLongToBeat
 
 The script `HowLongToBeat_Site_Crawler.py` contains a class `HowLongToBeat_Crawler` which performs the webscraping. It contains all possible and meaningful information from the [HowLongToBeat](https://howlongtobeat.com/) for each videogame. Here is an example of how the website looks like for the game Europa Universalis III and what information has been webscraped into the database.
-
+![hi](/png/website_scraped_info.png)
 And here is an example of the `game_info` dictionary which is the final output of the `.scrape` method of class implemented in `HowLongToBeat_Site_Crawler.py`
-
+![hi](/png/python_scraped_info.png)
 # Uploading videogame information into the database
 
 The script `HowLongToBeat_Database_Creator.py` contains a class `HowLongToBeat_Games_Database` which creates the PostgreSQL database `HowLongToBeat_Database.sql` and its tables, and the class's method `.database_update` obtains the `game_info` dictionary from `HowLongToBeat_Site_Crawler.py` for each game and updates it into the database.
@@ -96,3 +96,17 @@ These tables contain respectively:
 The 4 tables listed above are connected to the `games` table via their respective connecting tables `game_platforms`, `game_genres`, `game_developers`, `game_publishers`, which contain `game_id` along with id of platform, genre, developer or publisher corresponding to it.
 
 # What is the longest offline game?
+Now finally SQL queries can be constructed to find out the longest offline game and all its other information. The script `HowLongToBeat_Longest_Game_Selector_Script.py` does exactly that. It loads and connects to the database using the library `psycopg2` and then displays the result. 
+
+
+
+I was searching for the longest offline game played in main_and_extras mode where the amount of backlogs is greater than 600 for not skewed statistics. The query and its result is - 
+
+![hi](/png/longest_game_games.png)
+
+Therefore the longest game is Hearts of Iron IV with 361 hours of playtime!!!!!!!
+
+All the additional information about Hearts of Iron IV from the secondary tables -
+
+![hi](/png/longest_game_info.png)
+
