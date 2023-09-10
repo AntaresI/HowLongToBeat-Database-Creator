@@ -44,24 +44,28 @@ class HowLongToBeat_Games_Database:
         
         self.cur.execute("CREATE TABLE IF NOT EXISTS platforms (platform_id SERIAL PRIMARY KEY, platform VARCHAR(500) UNIQUE)")
         
-        self.cur.execute("CREATE TABLE IF NOT EXISTS game_platforms (platform_id INTEGER REFERENCES platforms(platform_id),\
-                    game_id INTEGER REFERENCES games(game_id))")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS game_platforms (platform_id INTEGER REFERENCES platforms(platform_id)\
+                         ON UPDATE CASCADE ON DELETE CASCADE, game_id INTEGER REFERENCES games(game_id) ON UPDATE CASCADE ON\
+                         DELETE CASCADE)")
         
         self.cur.execute("CREATE TABLE IF NOT EXISTS genres (genre_id SERIAL PRIMARY KEY, genre VARCHAR(500) UNIQUE)")
         
-        self.cur.execute("CREATE TABLE IF NOT EXISTS game_genres (genre_id INTEGER REFERENCES genres(genre_id),\
-                    game_id INTEGER REFERENCES games(game_id))")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS game_genres (genre_id INTEGER REFERENCES genres(genre_id) ON UPDATE CASCADE \
+                         ON DELETE CASCADE, game_id INTEGER REFERENCES games(game_id) ON UPDATE CASCADE\
+                         ON DELETE CASCADE)")
         
         
         self.cur.execute("CREATE TABLE IF NOT EXISTS developers (developer_id SERIAL PRIMARY KEY, developer VARCHAR(500) UNIQUE)")
         
-        self.cur.execute("CREATE TABLE IF NOT EXISTS game_developers (developer_id INTEGER REFERENCES developers(developer_id),\
-                    game_id INTEGER REFERENCES games(game_id))")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS game_developers (developer_id INTEGER REFERENCES developers(developer_id) ON UPDATE\
+                         CASCADE ON DELETE CASCADE, game_id INTEGER REFERENCES games(game_id) ON UPDATE\
+                         CASCADE ON DELETE CASCADE)")
         
         self.cur.execute("CREATE TABLE IF NOT EXISTS publishers (publisher_id SERIAL PRIMARY KEY, publisher VARCHAR(500) UNIQUE)")
         
-        self.cur.execute("CREATE TABLE IF NOT EXISTS game_publishers (publisher_id INTEGER REFERENCES publishers(publisher_id),\
-                    game_id INTEGER REFERENCES games(game_id))")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS game_publishers (publisher_id INTEGER REFERENCES publishers(publisher_id) ON UPDATE\
+                         CASCADE ON DELETE CASCADE, game_id INTEGER REFERENCES games(game_id) ON UPDATE \
+                         CASCADE ON DELETE CASCADE)")
         """"""""""""""""""""""""   
         
     def database_update(self, start_url, end_url):
