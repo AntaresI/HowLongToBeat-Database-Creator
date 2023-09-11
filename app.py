@@ -1,15 +1,12 @@
 
 from flask import Flask, request, jsonify
 import psycopg2 as pg2
+import os
+
 app = Flask(__name__)
+url = os.getenv("DATABASE_URL")
 
-
-conn = pg2.connect(
-database = 'howlongtobeat_games_list',
-user = "postgres",
-host = "localhost",
-password = "password"    
-)
+conn = pg2.connect(url)
 
 @app.get("/")
 def home():

@@ -20,14 +20,14 @@ for i in range(len(longest_game[0])):
     
     
 cur.execute('''SELECT title, developer, publisher, genre, platform FROM game_developers JOIN \
-developers ON game_developers.developer_id = developers.developer_id JOIN games ON \
-game_developers.game_id = games.game_id JOIN game_publishers ON \
-game_publishers.game_id = games.game_id JOIN publishers ON game_publishers.publisher_id\
-= publishers.publisher_id JOIN game_genres ON \
-game_genres.game_id = games.game_id JOIN genres ON game_genres.genre_id\
-= genres.genre_id JOIN game_platforms ON \
-game_platforms.game_id = games.game_id JOIN platforms ON game_platforms.platform_id\
-= platforms.platform_id  WHERE title = (%s)''',(longest_game[0][colnames.index('title')],))
+            developers ON game_developers.developer_id = developers.developer_id JOIN games ON \
+            game_developers.game_id = games.game_id JOIN game_publishers ON \
+            game_publishers.game_id = games.game_id JOIN publishers ON game_publishers.publisher_id\
+            = publishers.publisher_id JOIN game_genres ON \
+            game_genres.game_id = games.game_id JOIN genres ON game_genres.genre_id\
+            = genres.genre_id JOIN game_platforms ON \
+            game_platforms.game_id = games.game_id JOIN platforms ON game_platforms.platform_id\
+            = platforms.platform_id  WHERE title = (%s)''',(longest_game[0][colnames.index('title')],))
     
 print("""""""""""""""""""")
 longest_game_info = cur.fetchall()
