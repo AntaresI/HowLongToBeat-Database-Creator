@@ -1,5 +1,6 @@
 # HowLongToBeat-Database-Creator
 ![hi](/png/howlongtobeat_website.png)
+
 # Introduction
 This is my project that involves creating a database `HowLongToBeat_Database.sql` from scraping data from website [HowLongToBeat](https://howlongtobeat.com/), which contains videogames and gaming statistics related to each videogame, such as the game's genre, developer, publisher, how long it takes to finish the game etc. 
 
@@ -110,3 +111,8 @@ All the additional information about Hearts of Iron IV from the secondary tables
 
 ![hi](/png/longest_game_info.png)
 
+# Loading the database
+In order to load the load the database into postgresql or mysql database do:
+1) With installed Git, enter command `git clone https://github.com/AntaresI/HowLongToBeat-Database-Creator.git`
+2) Move the `HowLongToBeat_Database.sql` where you want to store it and then go to that directory in Windows Command Prompt or Linux Bash
+3) If you have PostgreSQL installed, enter command `psql -U username databasename < HowLongToBeat_Database.sql` or if you have MySQL installed, enter command `mysql -U username databasename < HowLongToBeat_Database.sql`
