@@ -24,6 +24,11 @@ The script `HowLongToBeat_Database_Creator.py` contains a class `HowLongToBeat_G
 
 [HowLongToBeat](https://howlongtobeat.com/) can be used to search for a videogame. The http corresponding to a videogame contains just a number behind the main site like `https://howlongtobeat.com/game/11285`, meaning that it is possible to simply cycle through several tens of thousands of numbers starting from 1 and see whether there is a videogame information returned by the website or not. This was done, the number of url numbers was 120 000, as somewhere around the 100 000 mark the number of loaded sites containing videogames drastically diminished. Many url's didn't contain anything at all and the website returned was simply blank. This resulted in 37323 videogames found and their information scraped into the database.
 
+# Loading the database
+In order to load the load the database into postgresql or mysql database do:
+1) With installed Git, enter command `git clone https://github.com/AntaresI/HowLongToBeat-Database-Creator.git`
+2) Move the `HowLongToBeat_Database.sql` where you want to store it and then go to that directory in Windows Command Prompt or Linux Bash
+3) If you have PostgreSQL installed, enter command `psql -U username databasename < HowLongToBeat_Database.sql` or if you have MySQL installed, enter command `mysql -U username databasename < HowLongToBeat_Database.sql`
 # HowLongToBeat_Database
 
 The database `HowLongToBeat_Database.sql` contains 9 tables - `games`, `genres`, `developers`, `publishers`, `platforms` and its connecting tables `game_developers`, `game_publishers`, `game_platforms`, `game_genres`. 
@@ -110,9 +115,3 @@ Therefore the longest game is Hearts of Iron IV with 361 hours of playtime!!!!!!
 All the additional information about Hearts of Iron IV from the secondary tables -
 
 ![hi](/png/longest_game_info.png)
-
-# Loading the database
-In order to load the load the database into postgresql or mysql database do:
-1) With installed Git, enter command `git clone https://github.com/AntaresI/HowLongToBeat-Database-Creator.git`
-2) Move the `HowLongToBeat_Database.sql` where you want to store it and then go to that directory in Windows Command Prompt or Linux Bash
-3) If you have PostgreSQL installed, enter command `psql -U username databasename < HowLongToBeat_Database.sql` or if you have MySQL installed, enter command `mysql -U username databasename < HowLongToBeat_Database.sql`
